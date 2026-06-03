@@ -23,7 +23,7 @@ export default function FinalCTA() {
           </Reveal>
           <Reveal delay={0.24}>
             <a
-              href="#cases"
+              href="/play"
               className="mt-10 inline-block rounded-sm bg-cold-gold px-9 py-4 text-sm font-semibold uppercase tracking-[0.2em] text-cold-bg transition-transform hover:-translate-y-0.5"
             >
               Open your first case →

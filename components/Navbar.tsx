@@ -38,7 +38,7 @@ export default function Navbar() {
             Open cases
           </a>
           <a
-            href="#cta"
+            href="/play"
             className="rounded-sm border border-cold-text/25 px-4 py-2 text-[11px] font-medium uppercase tracking-[0.22em] text-cold-text transition-all hover:border-cold-gold hover:text-cold-gold"
           >
             Enter investigation

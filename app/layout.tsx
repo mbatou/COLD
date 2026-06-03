@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Bebas_Neue, Special_Elite, DM_Sans } from "next/font/google";
+import { Bebas_Neue, Special_Elite, DM_Sans, Courier_Prime } from "next/font/google";
 import "./globals.css";
 
 const bebas = Bebas_Neue({
@@ -22,6 +22,13 @@ const dmSans = DM_Sans({
   display: "swap",
 });
 
+const courier = Courier_Prime({
+  weight: ["400", "700"],
+  subsets: ["latin"],
+  variable: "--font-courier",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   title: "COLD — Cases Only Lead Deeper",
   description:
@@ -40,7 +47,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${bebas.variable} ${elite.variable} ${dmSans.variable}`}>
+    <html
+      lang="en"
+      className={`${bebas.variable} ${elite.variable} ${dmSans.variable} ${courier.variable}`}
+    >
       <body className="font-body bg-cold-bg text-cold-text grain vignette antialiased">
         {children}
       </body>

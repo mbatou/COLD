@@ -122,7 +122,7 @@ export default function Hero() {
         className="relative z-10 mt-9 flex flex-col items-center gap-3 sm:flex-row sm:gap-4"
       >
         <a
-          href="#cases"
+          href="/play"
           className="rounded-sm bg-cold-gold px-7 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-cold-bg transition-transform hover:-translate-y-0.5"
         >
           Open a case
