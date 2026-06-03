@@ -34,6 +34,16 @@ export default function PlayPage() {
     if (saved) setName(saved);
   }, []);
 
+  // Opened from a QR / share link (?join=CODE): jump straight to the join form.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const code = new URLSearchParams(window.location.search).get("join");
+    if (code) {
+      setJoinCode(code.toUpperCase());
+      setMode("join");
+    }
+  }, []);
+
   useEffect(() => {
     if (typeof window !== "undefined" && name.trim()) {
       localStorage.setItem("cold:name", name.trim());

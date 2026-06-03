@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { QRCodeSVG } from "qrcode.react";
+import { QrCode } from "lucide-react";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Room, RoomPlayer } from "@/lib/types";
 import { CASE_0044 } from "@/data/cases/0044/case";
@@ -21,10 +23,17 @@ export default function Lobby({
 }) {
   const [starting, setStarting] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [showQR, setShowQR] = useState(false);
+  const [joinUrl, setJoinUrl] = useState("");
   const isHost = room.host_id === userId;
   const host = players.find((p) => p.user_id === room.host_id);
   const canStart = players.length >= 2;
   const [letters, digits] = room.code.split("-");
+
+  // Build the scannable join link once the origin is known (client only).
+  useEffect(() => {
+    setJoinUrl(`${window.location.origin}/play?join=${room.code}`);
+  }, [room.code]);
 
   async function startInvestigation() {
     if (!canStart) return;
@@ -63,6 +72,32 @@ export default function Lobby({
       <p className="mt-3 text-xs uppercase tracking-[0.2em] text-cold-muted">
         {copied ? "Copied to clipboard" : "Share this code with your partner"}
       </p>
+
+      {/* QR join option — scan to join when players are together in person */}
+      <button
+        onClick={() => setShowQR((v) => !v)}
+        className="mt-4 flex items-center gap-2 border border-cold-border px-3 py-2 text-[10px] uppercase tracking-[0.18em] text-cold-text transition-colors hover:border-cold-gold"
+      >
+        <QrCode size={14} />
+        {showQR ? "Hide QR code" : "Show QR to join"}
+      </button>
+
+      {showQR && joinUrl && (
+        <div className="mt-4 flex flex-col items-center">
+          <div className="bg-cold-paper p-4 shadow-xl">
+            <QRCodeSVG
+              value={joinUrl}
+              size={184}
+              bgColor="#f4f0e4"
+              fgColor="#1a1810"
+              level="M"
+            />
+          </div>
+          <p className="mt-2 max-w-[200px] text-center text-[10px] leading-snug text-cold-muted">
+            Scan with a phone camera to open the case and join this room.
+          </p>
+        </div>
+      )}
 
       {/* Players */}
       <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
