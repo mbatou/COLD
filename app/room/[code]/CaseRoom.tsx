@@ -15,6 +15,20 @@ import ResolutionScreen from "./ResolutionScreen";
 export type MainView = "board" | "files" | "interview";
 export type MobilePane = MainView | "chat";
 
+/** True when the viewport is below the md breakpoint. Defaults to desktop on
+ *  first render, then corrects on mount — so only one layout tree mounts. */
+function useIsMobile() {
+  const [mobile, setMobile] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 767px)");
+    const update = () => setMobile(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
+  return mobile;
+}
+
 export default function CaseRoom({
   room,
   players,
@@ -36,6 +50,7 @@ export default function CaseRoom({
 
   const [theories, setTheories] = useState<Theory[]>([]);
   const [resolved, setResolved] = useState(false);
+  const isMobile = useIsMobile();
 
   // --- Theories + resolution realtime ---
   useEffect(() => {
@@ -128,95 +143,97 @@ export default function CaseRoom({
         onSwitchView={switchView}
       />
 
-      {/* Desktop grid */}
-      <div className="hidden flex-1 overflow-hidden md:grid md:grid-cols-[240px_1fr_220px]">
-        <LeftSidebar
-          caseMeta={caseMeta}
-          phase={room.phase}
-          me={me}
-          selectedFile={selectedFile}
-          onOpenFile={openFile}
-        />
-        <div className="relative overflow-hidden border-x border-cold-border">
-          {mainContent}
+      {/* Render a single layout tree to avoid double-mounting realtime
+          subscriptions (desktop + mobile simultaneously). */}
+      {!isMobile ? (
+        <div className="grid flex-1 grid-cols-[240px_1fr_220px] overflow-hidden">
+          <LeftSidebar
+            caseMeta={caseMeta}
+            phase={room.phase}
+            me={me}
+            selectedFile={selectedFile}
+            onOpenFile={openFile}
+          />
+          <div className="relative overflow-hidden border-x border-cold-border">
+            {mainContent}
+          </div>
+          <RightSidebar
+            caseMeta={caseMeta}
+            room={room}
+            me={me}
+            userId={userId}
+            players={players}
+            supabase={supabase}
+            onOpenInterview={openInterview}
+          />
         </div>
-        <RightSidebar
-          caseMeta={caseMeta}
-          room={room}
-          me={me}
-          userId={userId}
-          players={players}
-          supabase={supabase}
-          onOpenInterview={openInterview}
-        />
-      </div>
-
-      {/* Mobile single-column with pane tabs */}
-      <div className="flex flex-1 flex-col overflow-hidden md:hidden">
-        <div className="relative flex-1 overflow-hidden">
-          {mobilePane === "board" && (
-            <EvidenceBoard
-              roomId={room.id}
-              userId={userId}
-              me={me}
-              onOpenInterview={openInterview}
-              supabase={supabase}
-            />
-          )}
-          {mobilePane === "files" && (
-            <div className="flex h-full">
-              <div className="w-1/3 min-w-[150px] overflow-y-auto">
-                <LeftSidebar
-                  caseMeta={caseMeta}
-                  phase={room.phase}
-                  me={me}
-                  selectedFile={selectedFile}
-                  onOpenFile={openFile}
-                />
+      ) : (
+        <div className="flex flex-1 flex-col overflow-hidden">
+          <div className="relative flex-1 overflow-hidden">
+            {mobilePane === "board" && (
+              <EvidenceBoard
+                roomId={room.id}
+                userId={userId}
+                me={me}
+                onOpenInterview={openInterview}
+                supabase={supabase}
+              />
+            )}
+            {mobilePane === "files" && (
+              <div className="flex h-full">
+                <div className="w-1/3 min-w-[150px] overflow-y-auto">
+                  <LeftSidebar
+                    caseMeta={caseMeta}
+                    phase={room.phase}
+                    me={me}
+                    selectedFile={selectedFile}
+                    onOpenFile={openFile}
+                  />
+                </div>
+                <div className="flex-1 overflow-hidden border-l border-cold-border">
+                  <FileViewer
+                    caseMeta={caseMeta}
+                    fileId={selectedFile}
+                    phase={room.phase}
+                  />
+                </div>
               </div>
-              <div className="flex-1 overflow-hidden border-l border-cold-border">
-                <FileViewer
-                  caseMeta={caseMeta}
-                  fileId={selectedFile}
-                  phase={room.phase}
-                />
-              </div>
-            </div>
-          )}
-          {mobilePane === "interview" && (
-            <InterviewPanel
-              roomId={room.id}
-              suspectId={selectedSuspect}
-              supabase={supabase}
-              userId={userId}
-            />
-          )}
-          {mobilePane === "chat" && (
-            <RightSidebar
-              caseMeta={caseMeta}
-              room={room}
-              me={me}
-              userId={userId}
-              players={players}
-              supabase={supabase}
-              onOpenInterview={openInterview}
-            />
-          )}
+            )}
+            {mobilePane === "interview" && (
+              <InterviewPanel
+                roomId={room.id}
+                suspectId={selectedSuspect}
+                supabase={supabase}
+                userId={userId}
+              />
+            )}
+            {mobilePane === "chat" && (
+              <RightSidebar
+                caseMeta={caseMeta}
+                room={room}
+                me={me}
+                userId={userId}
+                players={players}
+                supabase={supabase}
+                onOpenInterview={openInterview}
+              />
+            )}
+          </div>
+          <nav className="grid grid-cols-4 border-t border-cold-border bg-cold-dark">
+            {(["board", "files", "interview", "chat"] as MobilePane[]).map((p) => (
+              <button
+                key={p}
+                onClick={() => setMobilePane(p)}
+                className={`py-3 text-[10px] uppercase tracking-[0.15em] ${
+                  mobilePane === p ? "text-cold-gold" : "text-cold-muted"
+                }`}
+              >
+                {p}
+              </button>
+            ))}
+          </nav>
         </div>
-        <nav className="grid grid-cols-4 border-t border-cold-border bg-cold-dark">
-          {(["board", "files", "interview", "chat"] as MobilePane[]).map((p) => (
-            <button
-              key={p}
-              onClick={() => setMobilePane(p)}
-              className={`py-3 text-[10px] uppercase tracking-[0.15em] ${
-                mobilePane === p ? "text-cold-gold" : "text-cold-muted"
-              }`}
-            >
-              {p}
-            </button>
-          ))}
-        </nav>
-      </div>
+      )}
 
       {resolved && (
         <ResolutionScreen
