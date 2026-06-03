@@ -1,16 +1,12 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
-
-const url =
-  process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder.supabase.co";
-const anonKey =
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "public-anon-placeholder-key";
+import { supabaseUrl, supabaseAnonKey, supabaseServiceKey } from "./env";
 
 /** Server-side Supabase client bound to the request cookie store. */
 export function createClient() {
   const cookieStore = cookies();
 
-  return createServerClient(url, anonKey, {
+  return createServerClient(supabaseUrl(), supabaseAnonKey(), {
     cookies: {
       getAll() {
         return cookieStore.getAll();
@@ -31,9 +27,7 @@ export function createClient() {
 
 /** Service-role client for trusted server-only operations (seeding, API routes). */
 export function createServiceClient() {
-  const serviceKey =
-    process.env.SUPABASE_SERVICE_ROLE_KEY || "service-role-placeholder-key";
-  return createServerClient(url, serviceKey, {
+  return createServerClient(supabaseUrl(), supabaseServiceKey(), {
     cookies: { getAll: () => [], setAll: () => {} },
   });
 }

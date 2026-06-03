@@ -1,10 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-
-const url =
-  process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder.supabase.co";
-const anonKey =
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "public-anon-placeholder-key";
+import { supabaseUrl, supabaseAnonKey } from "./env";
 
 /**
  * Refreshes the Supabase auth session on every request so anonymous
@@ -13,7 +9,7 @@ const anonKey =
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
 
-  const supabase = createServerClient(url, anonKey, {
+  const supabase = createServerClient(supabaseUrl(), supabaseAnonKey(), {
     cookies: {
       getAll() {
         return request.cookies.getAll();

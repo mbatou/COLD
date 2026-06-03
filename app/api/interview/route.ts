@@ -33,7 +33,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unknown suspect" }, { status: 404 });
   }
 
-  const apiKey = process.env.ANTHROPIC_API_KEY;
+  // Accept either ANTHROPIC_API_KEY or ANTHROPIC_SECRET_KEY (Vercel naming).
+  const apiKey =
+    process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_SECRET_KEY;
   if (!apiKey) {
     return NextResponse.json(
       { error: "Interview service is not configured." },
