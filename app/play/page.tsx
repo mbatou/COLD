@@ -33,7 +33,12 @@ export default function PlayPage() {
       if (!session) {
         const { data, error } = await supabase.auth.signInAnonymously();
         if (error) {
-          if (active) setError("Could not start a session. Check Supabase config.");
+          console.error("signInAnonymously failed:", error);
+          if (active)
+            setError(
+              `Could not start a session: ${error.message}. ` +
+                "If this mentions anonymous sign-ins, enable them in Supabase → Authentication → Sign In / Providers."
+            );
         } else if (active) {
           setUserId(data.user?.id ?? null);
         }
