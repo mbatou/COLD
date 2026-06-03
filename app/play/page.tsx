@@ -22,14 +22,33 @@ export default function PlayPage() {
   const [joinCode, setJoinCode] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Rooms the persisted anonymous user already belongs to (resume).
+  const [myRooms, setMyRooms] = useState<
+    { code: string; status: string }[]
+  >([]);
 
-  // Anonymous auth on landing.
+  // Prefill the saved investigator name.
+  useEffect(() => {
+    const saved =
+      typeof window !== "undefined" ? localStorage.getItem("cold:name") : null;
+    if (saved) setName(saved);
+  }, []);
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && name.trim()) {
+      localStorage.setItem("cold:name", name.trim());
+    }
+  }, [name]);
+
+  // Anonymous auth on landing — the session persists across visits, so the
+  // same user_id (and room memberships) come back without any login.
   useEffect(() => {
     let active = true;
     (async () => {
       const {
         data: { session },
       } = await supabase.auth.getSession();
+      let uid = session?.user.id ?? null;
       if (!session) {
         const { data, error } = await supabase.auth.signInAnonymously();
         if (error) {
@@ -39,11 +58,24 @@ export default function PlayPage() {
               `Could not start a session: ${error.message}. ` +
                 "If this mentions anonymous sign-ins, enable them in Supabase → Authentication → Sign In / Providers."
             );
-        } else if (active) {
-          setUserId(data.user?.id ?? null);
+        } else {
+          uid = data.user?.id ?? null;
         }
-      } else if (active) {
-        setUserId(session.user.id);
+      }
+      if (active && uid) {
+        setUserId(uid);
+        // Surface rooms this returning user can resume.
+        const { data: memberships } = await supabase
+          .from("room_players")
+          .select("room_id, rooms(code, status)")
+          .eq("user_id", uid)
+          .order("joined_at", { ascending: false })
+          .limit(5);
+        const rooms = (memberships ?? [])
+          .map((m: any) => m.rooms)
+          .filter((r: any) => r && r.status !== "resolved")
+          .map((r: any) => ({ code: r.code, status: r.status }));
+        setMyRooms(rooms);
       }
       if (active) setReady(true);
     })();
@@ -127,11 +159,13 @@ export default function PlayPage() {
         setBusy(false);
         return;
       }
-      if (room.status !== "waiting") {
-        setError("That investigation has already started.");
+      if (room.status === "resolved") {
+        setError("That case is already closed.");
         setBusy(false);
         return;
       }
+      // Waiting rooms accept new players; active rooms accept returning
+      // members and late joiners — either way you can exit and come back.
 
       // Insert membership (idempotent on the room_id+user_id unique constraint).
       const players = await supabase
@@ -203,6 +237,30 @@ export default function PlayPage() {
                 >
                   Join a room
                 </button>
+
+                {myRooms.length > 0 && (
+                  <div className="mt-5 border-t border-cold-border pt-4">
+                    <p className="mb-2 text-[9px] uppercase tracking-[0.2em] text-cold-gold">
+                      Resume investigation
+                    </p>
+                    <div className="space-y-2">
+                      {myRooms.map((r) => (
+                        <button
+                          key={r.code}
+                          onClick={() => router.push(`/room/${r.code}`)}
+                          className="flex w-full items-center justify-between border border-cold-border bg-cold-surface px-3 py-2.5 text-left transition-colors hover:border-cold-gold"
+                        >
+                          <span className="font-display text-lg tracking-[0.15em] text-cold-gold">
+                            {r.code}
+                          </span>
+                          <span className="text-[9px] uppercase tracking-widest text-cold-muted">
+                            {r.status === "active" ? "In progress" : "Waiting"}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 

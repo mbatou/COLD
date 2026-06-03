@@ -286,7 +286,10 @@ export default function EvidenceBoard({
   }
   function onPointerMove(e: React.PointerEvent) {
     if (panning.current) {
-      setView((v) => ({ ...v, x: e.clientX - panning.current!.x, y: e.clientY - panning.current!.y }));
+      // Capture before setView: the functional updater may run after
+      // onPointerUp has cleared panning.current, which would read null.x.
+      const p = panning.current;
+      setView((v) => ({ ...v, x: e.clientX - p.x, y: e.clientY - p.y }));
     }
     // Broadcast cursor (throttled).
     const now = Date.now();

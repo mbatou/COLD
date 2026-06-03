@@ -2,6 +2,7 @@
 
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
+import CrimeSceneSVG from "./CrimeSceneSVG";
 
 const item = {
   hidden: { opacity: 0, y: 30, scale: 0.96 },
@@ -64,15 +65,14 @@ export default function EvidencePreview() {
             </p>
           </motion.div>
 
-          {/* Blurred photo placeholder */}
+          {/* Blurred photo */}
           <motion.div
             variants={item}
             custom={-4}
             className="absolute bottom-[6%] left-[4%] h-44 w-36 bg-black/60 p-2 shadow-2xl ring-1 ring-white/10"
           >
-            <div className="h-full w-full bg-cold-text/15 [filter:blur(3px)]">
-              <div className="h-1/2 w-full bg-cold-text/10" />
-              <div className="mt-6 ml-4 h-10 w-10 rounded-full bg-cold-text/20" />
+            <div className="h-full w-full overflow-hidden bg-[#1a160f]">
+              <CrimeSceneSVG className="h-full w-full opacity-90" blur />
             </div>
             <span className="absolute bottom-3 right-3 font-mono text-[8px] tracking-widest text-cold-text/50">
               EXHIBIT C

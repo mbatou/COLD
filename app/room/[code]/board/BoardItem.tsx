@@ -2,9 +2,9 @@
 
 import { memo, useState } from "react";
 import { useDrag } from "@use-gesture/react";
-import { Camera } from "lucide-react";
 import type { BoardItem as TItem } from "@/lib/types";
 import { initials, colorFor } from "@/lib/utils";
+import CrimeSceneSVG from "@/components/CrimeSceneSVG";
 
 interface Props {
   item: TItem;
@@ -238,8 +238,8 @@ function PhotoCard({ item }: { item: TItem }) {
       className="bg-white shadow-xl"
       style={{ width: 160, padding: "6px 6px 20px" }}
     >
-      <div className="relative flex h-32 items-center justify-center bg-[#2a2418]">
-        <Camera size={26} className="text-cold-muted/60" />
+      <div className="relative h-32 overflow-hidden bg-[#1a160f]">
+        <CrimeSceneSVG className="h-full w-full" />
       </div>
       <p className="mt-2 px-1 text-center font-type text-[9px] text-cold-ink">
         {caption}

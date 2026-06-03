@@ -9,6 +9,9 @@ export interface Room {
   phase: number;
   started_at: string | null;
   created_at: string;
+  paused: boolean;
+  paused_at: string | null;
+  pause_total_ms: number;
 }
 
 export interface RoomPlayer {

@@ -11,6 +11,7 @@ import EvidenceBoard from "./board/EvidenceBoard";
 import FileViewer from "./files/FileViewer";
 import InterviewPanel from "./interview/InterviewPanel";
 import ResolutionScreen from "./ResolutionScreen";
+import CaseIntro from "./CaseIntro";
 
 export type MainView = "board" | "files" | "interview";
 export type MobilePane = MainView | "chat";
@@ -51,6 +52,22 @@ export default function CaseRoom({
   const [theories, setTheories] = useState<Theory[]>([]);
   const [resolved, setResolved] = useState(false);
   const isMobile = useIsMobile();
+
+  // Show the case briefing once per room per browser; re-openable from settings.
+  const [showBriefing, setShowBriefing] = useState(false);
+  useEffect(() => {
+    const key = `cold:briefed:${room.code}`;
+    if (typeof window !== "undefined" && !localStorage.getItem(key)) {
+      setShowBriefing(true);
+    }
+  }, [room.code]);
+
+  function dismissBriefing() {
+    if (typeof window !== "undefined") {
+      localStorage.setItem(`cold:briefed:${room.code}`, "1");
+    }
+    setShowBriefing(false);
+  }
 
   // --- Theories + resolution realtime ---
   useEffect(() => {
@@ -140,7 +157,10 @@ export default function CaseRoom({
         room={room}
         players={players}
         view={view}
+        userId={userId}
+        supabase={supabase}
         onSwitchView={switchView}
+        onShowBriefing={() => setShowBriefing(true)}
       />
 
       {/* Render a single layout tree to avoid double-mounting realtime
@@ -233,6 +253,10 @@ export default function CaseRoom({
             ))}
           </nav>
         </div>
+      )}
+
+      {showBriefing && (
+        <CaseIntro caseMeta={caseMeta} onBegin={dismissBriefing} />
       )}
 
       {resolved && (

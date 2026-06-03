@@ -1,24 +1,14 @@
 "use client";
 
-import { Camera } from "lucide-react";
+import CrimeSceneSVG from "@/components/CrimeSceneSVG";
 
 export default function RoomPhoto() {
   return (
     <div className="mx-auto max-w-lg">
       <div className="bg-white p-3 pb-12 shadow-2xl">
         {/* Photo */}
-        <div
-          className="relative flex h-80 items-center justify-center bg-[#2a2418]"
-          style={{
-            backgroundImage:
-              "linear-gradient(rgba(122,110,90,0.18) 1px, transparent 1px), linear-gradient(90deg, rgba(122,110,90,0.18) 1px, transparent 1px)",
-            backgroundSize: "40px 40px",
-          }}
-        >
-          <Camera size={40} className="text-cold-muted/40" />
-          {/* faint room layout suggestion */}
-          <div className="absolute inset-8 border border-cold-muted/20" />
-          <div className="absolute bottom-12 left-12 h-16 w-24 border border-cold-muted/25" />
+        <div className="relative h-80 overflow-hidden bg-[#1a160f]">
+          <CrimeSceneSVG className="h-full w-full" />
         </div>
         <p className="mt-4 text-center font-type text-sm text-cold-ink">
           Rm 304 — discovered 02:15h

@@ -28,9 +28,10 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ### Backend setup
 
-1. Create a Supabase project and run the migration in
-   `supabase/migrations/001_cold_schema.sql` (SQL editor or `supabase db push`).
-   It creates every table, RLS policy, and Realtime publication.
+1. Create a Supabase project and run the migrations in `supabase/migrations/`
+   in order (SQL editor or `supabase db push`):
+   - `001_cold_schema.sql` — tables, RLS policies, Realtime publication.
+   - `002_pause_and_resume.sql` — timer pause columns + leave-room policy.
 2. Enable **Anonymous sign-ins** in Supabase Auth settings.
 3. Populate `.env.local` with the Supabase URL, anon key, service-role key, and
    `ANTHROPIC_API_KEY` (server-side only — never exposed to the client).
