@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Settings, Pause, Play, LogOut, BookOpen } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
+import { Settings, Pause, Play, LogOut, BookOpen, QrCode, X } from "lucide-react";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Room, RoomPlayer } from "@/lib/types";
 import type { CaseMeta } from "@/data/cases/0044/case";
@@ -33,7 +34,13 @@ export default function TopBar({
   const urgent = remaining < 10 * 60 * 1000 && !room.paused;
   const isHost = room.host_id === userId;
   const [menuOpen, setMenuOpen] = useState(false);
+  const [showQR, setShowQR] = useState(false);
+  const [joinUrl, setJoinUrl] = useState("");
   const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setJoinUrl(`${window.location.origin}/play?join=${room.code}`);
+  }, [room.code]);
 
   useEffect(() => {
     const onDoc = (e: MouseEvent) => {
@@ -174,6 +181,15 @@ export default function TopBar({
               >
                 Case briefing
               </MenuItem>
+              <MenuItem
+                onClick={() => {
+                  setShowQR(true);
+                  setMenuOpen(false);
+                }}
+                icon={<QrCode size={14} />}
+              >
+                Invite by QR
+              </MenuItem>
               <MenuItem onClick={leaveRoom} icon={<LogOut size={14} />} danger>
                 Leave room
               </MenuItem>
@@ -181,6 +197,42 @@ export default function TopBar({
           )}
         </div>
       </div>
+
+      {/* QR invite modal — scan to join mid-investigation */}
+      {showQR && joinUrl && (
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-cold-black/85 px-5"
+          onClick={() => setShowQR(false)}
+        >
+          <div
+            className="relative w-full max-w-xs border border-cold-border bg-cold-dark p-6 text-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setShowQR(false)}
+              className="absolute right-3 top-3 text-cold-muted transition-colors hover:text-cold-text"
+              title="Close"
+            >
+              <X size={16} />
+            </button>
+            <p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-cold-gold">
+              Invite to {room.code}
+            </p>
+            <div className="mt-4 inline-block bg-cold-paper p-4 shadow-xl">
+              <QRCodeSVG
+                value={joinUrl}
+                size={180}
+                bgColor="#f4f0e4"
+                fgColor="#1a1810"
+                level="M"
+              />
+            </div>
+            <p className="mt-3 text-[10px] leading-snug text-cold-muted">
+              Scan with a phone camera to join this investigation in progress.
+            </p>
+          </div>
+        </div>
+      )}
     </header>
   );
 }
